@@ -8,11 +8,13 @@ headers = HTTP::Headers{"Authorization" => "Bearer #{apikey}"}
 response = HTTP::Client.get("https://#{hostname}/api/alerts?state=alerting", headers)
 alerts = JSON.parse(response.body).as_a
 alert_prefix = {{ env("GRAFANA_ALERT_PREFIX") }} || "Grafana: "
+success_message = {{ env("GRAFANA_ALERT_SUCCESS_MESSAGE") }} || "✅"
+alert_message = {{ env("GRAFANA_ALERT_ALERT_MESSAGE") }} || "‼️"
 
 if alerts.size == 0
-  puts "#{alert_prefix}✅"
+  puts "#{alert_prefix}#{success_message}"
 else
-  puts "#{alert_prefix}‼️"
+  puts "#{alert_prefix}#{alert_message}"
 end
 
 puts "---"
