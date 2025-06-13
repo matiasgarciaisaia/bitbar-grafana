@@ -2,11 +2,14 @@ require "http/client"
 require "json"
 require "./security"
 
-hostname = {{ env("GRAFANA_HOST") }}
-apikey = Security.find_generic_password(hostname, "apikey")
-headers = HTTP::Headers{"Authorization" => "Bearer #{apikey}"}
-response = HTTP::Client.get("https://#{hostname}/api/alerts?state=alerting", headers)
-alerts = JSON.parse(response.body).as_a
+alerts = [] of Tuple(String, JSON::Any)
+hostnames = {{ env("GRAFANA_HOSTS") }}.split(",")
+hostnames.each { |hostname|
+  apikey = Security.find_generic_password(hostname, "apikey")
+  headers = HTTP::Headers{"Authorization" => "Bearer #{apikey}"}
+  response = HTTP::Client.get("https://#{hostname}/api/alerts?state=alerting", headers)
+  alerts = JSON.parse(response.body).as_a.map { |alert| Tuple.new(hostname, alert) }
+}
 alert_prefix = {{ env("GRAFANA_ALERT_PREFIX") }} || "Grafana: "
 success_message = {{ env("GRAFANA_ALERT_SUCCESS_MESSAGE") }} || "✅"
 alert_message = {{ env("GRAFANA_ALERT_ALERT_MESSAGE") }} || "‼️"
@@ -18,15 +21,19 @@ else
 end
 
 puts "---"
-puts "Open Grafana | href=https://#{hostname}"
+hostnames.each { |hostname|
+  puts "#{hostname} | href=https://#{hostname}"
+}
 puts "---"
-alerts.each do |alert|
+alerts.each do |alert_and_host|
+  hostname = alert_and_host[0]
+  alert = alert_and_host[1]
   href = "https://#{hostname}#{alert["url"]}?fullscreen&panelId=#{alert["panelId"]}"
   if alert["evalData"]
     alert["evalData"]["evalMatches"].as_a.each do |match|
-      puts "#{alert["name"]}: #{match["metric"]} = #{match["value"]} | color=#E45959 href=#{href}"
+      puts "#{hostname} #{alert["name"]}: #{match["metric"]} = #{match["value"]} | color=#E45959 href=#{href}"
     end
   else
-    puts "#{alert["name"]} | color=#E45959 href=#{href}"
+    puts "#{hostname} #{alert["name"]} | color=#E45959 href=#{href}"
   end
 end
