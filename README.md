@@ -3,25 +3,41 @@
 
 ## Installation
 
-To build the plugin, make sure the hostname is set in the environment variable GRAFANA_HOST. For example:
+To build the plugin, list the target hostname(s) in the `GRAFANA_HOSTS`
+environment variable, separated by `,`. For example:
+
 ```bash
-$ GRAFANA_HOST=my.grafana.host shards build
+GRAFANA_HOSTS=my.grafana.host shards build
 ```
 
-After that, copy the generated binary `bin/grafana` into the BitBar plugins directory.
+```bash
+GRAFANA_HOSTS=my.grafana.host,another.grafana.host shards build
+```
 
-This plugin looks for the Grafana API key from the macOS keychain. Make sure to add an entry using the hostname as the entry name, and `apikey` as the account name. Once the item is created, make sure to run the plugin executable at least once and give permanent access to the keychain entry.
+After that, copy the generated binary `bin/grafana` into the BitBar plugins
+directory. Remember to set the execution permission!
 
-You can customise the alert's prefix by setting `GRAFANA_ALERT_PREFIX` environment variable when building. It defaults to `Grafana: ` (whitespace included so you can omit it if you want).
+This plugin looks for the Grafana API key from the macOS keychain. Make sure to
+add an entry using the hostname as the entry name, and `apikey` as the account
+name. Once the item is created, make sure to run the plugin executable at least
+once and give permanent access to the keychain entry.
 
-## Contributing
+You can customise the alert's prefix by setting `GRAFANA_ALERT_PREFIX` environment
+variable when building. It defaults to `Grafana: ` (whitespace included so you
+can omit it if you want).
 
-1. Fork it (<https://github.com/waj/bitbar-grafana/fork>)
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
+```bash
+GRAFANA_HOSTS=my.grafana.host,another.grafana.host GRAFANA_ALERT_PREFIX='' shards build
+```
+
+You can also set the success or alert messages with
+`GRAFANA_ALERT_SUCCESS_MESSAGE` and `GRAFANA_ALERT_ALERT_MESSAGE`.
+
+```bash
+GRAFANA_HOSTS=my.grafana.host,another.grafana.host GRAFANA_ALERT_PREFIX='' GRAFANA_ALERT_SUCCESS_MESSAGE='👍' GRAFANA_ALERT_ALERT_MESSAGE='🚨' shards build
+```
 
 ## Contributors
 
-- [Juan Wajnerman](https://github.com/waj) - creator and maintainer
+- [Matias Garcia Isaia](https://github.com/matiasgarciaisaia) - maintainer
+- [Juan Wajnerman](https://github.com/waj) - creator
