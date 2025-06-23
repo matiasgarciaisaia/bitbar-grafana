@@ -19,9 +19,10 @@ def fetch_v2_alerts(hostname, headers)
   alerts.map do |alert_and_host|
     hostname = alert_and_host[0]
     alert = alert_and_host[1]
-    annotations = alert["annotations"]
+    annotations = alert["annotations"].as_h?
     href = alert_v2_url(hostname, alert)
-    if alert_value = annotations["AlertValues"].to_s
+    if annotations && annotations.has_key?("AlertValues")
+      alert_value = annotations["AlertValues"].to_s
       "#{hostname} #{alert["labels"]["alertname"]}: #{alert_value.gsub('\n', '-')} | color=#E45959 href=#{href}"
     else
       "#{hostname} #{alert["labels"]["alertname"]} | color=#E45959 href=#{href}"
